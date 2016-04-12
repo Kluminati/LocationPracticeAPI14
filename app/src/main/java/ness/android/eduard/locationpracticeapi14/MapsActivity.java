@@ -1,8 +1,11 @@
 package ness.android.eduard.locationpracticeapi14;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -13,7 +16,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener,OnLocationInferListener {
 
     private GoogleMap mMap;
 
@@ -60,6 +67,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     {
         mMap.clear();
         mMap.addMarker(new MarkerOptions().title("Location set").snippet("The new loction").position(latLng));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,17));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
+        inferAddress(latLng);
+    }
+
+    public void inferAddress(LatLng latLng)
+    {
+
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+
+            Address address = addresses.get(0);
+            StringBuilder sb = new StringBuilder();
+
+            for (int i=0;i<address.getMaxAddressLineIndex();i++)
+            {
+                String line = address.getAddressLine(i);
+                sb.append(line);
+                sb.append(" ");
+            }
+
+            Toast.makeText(getApplicationContext(), sb.toString(), Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    @Override
+    public void OnLocationInfer(LatLng latLng) {
+        onMapClick(latLng);
     }
 }
